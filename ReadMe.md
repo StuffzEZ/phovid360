@@ -82,7 +82,7 @@ If you use this library in your research or project, please refer to the include
 
 ### BibTeX
 ```bibtex
-@misc{egan2025browser360html,
+@misc{egan2025html360viewer,
   title={Browser-Based Viewer for 360 Images and Videos},
   author={Egan, Ben},
   year={2025},
