@@ -47,7 +47,7 @@ Work on all major web browsers that [A-Frame](https://aframe.io/docs/1.7.0/intro
 
 **Option 2 – Web Demo**
 
-1. Visit the [live demo](http://progamergov.github.io/html-360-viewer) in your browser.
+1. Visit the [live demo](https://progamergov.github.io/html-360-viewer) in your browser.
 2. Upload a 360° image or video to start viewing.
 
 **Option 3 – Local Copy**
