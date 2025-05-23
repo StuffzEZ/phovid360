@@ -73,9 +73,9 @@ Works on [all VR headsets supported by A-Frame](https://aframe.io/docs/1.7.0/int
 | Pan View           | Left-click + drag or touch + drag            |
 | Zoom               | Mouse wheel or pinch gesture                 |
 | Fullscreen         | Browser fullscreen and VR headset control    |
-| Stereo Toggle      | Bottom-left “Stereo” button                  |
+| Stereo Toggle      | Bottom-left "Stereo" button                  |
 | Screenshot         | Camera icon at bottom center                 |
-| Upload/Reset Media | “Upload” button below controls               |
+| Upload/Reset Media | "Upload" button below controls               |
 | Play/Pause Video   | Play/pause button on video controls          |
 | Seek in Video      | Use the timeline slider                      |
 
