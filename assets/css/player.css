@@ -1,0 +1,310 @@
+        /* --- Layout & Typography --- */
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            touch-action: pan-x pan-y; /* disable pinch-zoom */
+        }
+        #container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            background: #000;
+        }
+
+        /* --- Drop area --- */
+        #dropArea {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #f5f5f5;
+            border: 3px dashed #ccc;
+            z-index: 10;
+            transition: 0.2s ease all;
+        }
+        #dropArea.hidden { display: none; }
+        #dropArea h2 { margin-bottom: 12px; color: #333; }
+        #fileInput { display: none; }
+        #selectButton {
+            padding: 12px 24px;
+            background: #4285f4;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #selectButton:hover { background: #3367d6; }
+
+        /* --- A-Frame container --- */
+        #aframeContainer {
+            position: absolute;
+            inset: 0;
+        }
+
+        /* --- Global controls wrapper --- */
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: none;
+            text-align: center;
+            user-select: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        .control-button {
+            padding: 6px 12px;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 12px;
+            margin-right: 8px;
+        }
+        .control-button:hover { background: rgba(0,0,0,0.7); }
+        .control-button.active { background: #4285f4; }
+        .control-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        /* --- Modern video controls --- */
+        #videoControls {
+            display: none;
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0,0,0,0.6);
+            padding: 10px 14px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+            margin-bottom: 16px;
+        }
+        #playPauseButton {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: none;
+            background: #4285f4;
+            color: #fff;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #playPauseButton:hover { background: #3367d6; }
+
+        /* Slider styling */
+        #videoSlider {
+            -webkit-appearance: none;
+            width: 320px;
+            height: 6px;
+            background: #ddd;
+            border-radius: 3px;
+            outline: none;
+        }
+        #videoSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4285f4;
+            cursor: pointer;
+            border: none;
+        }
+        #videoSlider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4285f4;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* --- Loading indicator & zoom info --- */
+        #loadingIndicator {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 30;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(3px);
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0,0,0,0.15);
+            border-left-color: #4285f4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 12px;
+        }
+        @keyframes spin { 0% {transform: rotate(0);} 100% {transform: rotate(360deg);} }
+
+        #zoomInfo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.55);
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 20;
+            display: none;
+        }
+
+        /* --- Stereo Button --- */
+        #stereoButton {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 20;
+            padding: 6px 10px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            display: none;
+        }
+        #stereoButton:hover { background: rgba(0,0,0,0.8); }
+        #stereoButton.active { background: rgba(66,133,244,0.8); }
+
+        /* --- Upload Button --- */
+        #resetButton {
+            padding: 8px 16px;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 25;
+            display: none;
+            margin-top: 10px;
+            height: 36px;
+        }
+        #resetButton:hover { background: rgba(0,0,0,0.7); }
+
+        /* --- Screenshot Button --- */
+        #screenshotButton {
+            padding: 0;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 25;
+            display: none;
+            margin-left: 8px;
+            margin-top: 10px;
+            height: 36px;
+            width: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        #screenshotButton:hover { background: rgba(0,0,0,0.7); }
+
+        /* --- Bottom buttons container --- */
+        #bottomButtonsContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- Screenshot flash effect --- */
+        #screenshotFlash {
+            position: absolute;
+            inset: 0;
+            background: white;
+            opacity: 0;
+            z-index: 40;
+            pointer-events: none;
+        }
+
+        /* --- Screenshot feedback --- */
+        #screenshotFeedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 45;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        /* --- Media drop overlay --- */
+        #globalDropOverlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(18, 85, 204, 0.7);
+            border: 5px dashed #fff;
+            z-index: 50;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            backdrop-filter: blur(2px);
+        }
+        #globalDropOverlay p {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        /* Material icons styles */
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 24px;
+        }
+
+        /* ------------- Mobile Device Override ------------- */
+        @media (max-width: 900px) {
+            /* lift control bar */
+            #controls { bottom: 80px !important; }
+
+            /* lift the Stereo toggle to the same line */
+            #stereoButton { bottom: 80px !important; }
+
+            /* pull A-Frame’s VR / fullscreen button up and over everything */
+            .a-enter-vr-button {
+                bottom: 80px !important;
+                z-index: 1000 !important;
+            }
+        }
+
+        /* ------------- Hide Image Highlighting ------------- */
+        ::selection {
+            background: transparent;
+        }
+        ::moz-selection {
+            background: transparent;
+        }

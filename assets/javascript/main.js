@@ -1,435 +1,4 @@
-<!DOCTYPE html>
-
-<!--
-Lightweight browser based viewer for 360 degree images and videos.
-Created by Ben Egan: https://github.com/ProGamerGov
-
-
-Controls
-
-| Action             | How to Use                                 |
-| ------------------ | -------------------------------------------|
-| Navigate View      | Left-click + drag or touch + drag          |
-| Zoom               | Mouse wheel or pinch gesture               |
-| Fullscreen         | Browser fullscreen and VR headset control  |
-| Stereo Toggle      | Bottom-left "Stereo" button                |
-| Screenshot         | Camera icon at bottom center               |
-| Upload/Reset Media | "Upload" button below controls             |
-| Play/Pause Video   | Play/pause button on video controls        |
-| Seek in Video      | Use the timeline slider                    |
-
-Additonal info
-- Stereo Toggle: Switch between monoscopic and stereo images (mono/top-bottom/side-by-side)
-- Upload/Reset Media: New media can be uploaded via drag and drop at any time.
-
-
-Loading from external URLs
-- Images and videos can be loaded from other websites by appending '?url=' or '?src=' to the viewer URL, followed by the direct media link.
-- Example: https://progamergov.github.io/html-360-viewer?url=https://example.com/example_image.jpg
-- This only works when the viewer is hosted via a local or remote web server (not directly opened as a file).
-- See here for more details: https://aframe.io/docs/1.7.0/introduction/installation.html#use-a-local-server
-- You can also provide the mono/stereo viewing mode that should be used when loading the image.
-- To specify the viewing mode to use, append '&stereo=0' for monoscopic (default), '&stereo=1' for up/down stereo, and '&stereo=2' for right/left stereo.
-- Example: https://progamergov.github.io/html-360-viewer?url=https://example.com/example_image.jpg&stereo=0
-
-
-BibTeX
-@misc{egan2025html360viewer,
-  title={Browser-Based Viewer for 360 Images and Videos},
-  author={Egan, Ben},
-  year={2025},
-  publisher={GitHub},
-  howpublished={\url{https://github.com/ProGamerGov/html-360-viewer}}
-}
-
-MIT License
-Copyright (c) 2025 Ben Egan
--->
-
-<html lang="en">
-<head>
-    <!-- Primary Meta Tags -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="title" content="Browser-Based Viewer for 360° Images and Videos">
-    <meta name="description" content="A lightweight, browser-based viewer for interactive 360° panoramas and videos. Supports monoscopic and stereo formats, zoom, and screenshot.">
-
-    <!-- Open Graph -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://progamergov.github.io/html-360-viewer">
-    <meta property="og:title" content="Browser-Based Viewer for 360° Images and Videos">
-    <meta property="og:description" content="A lightweight, browser-based viewer for interactive 360° panoramas and videos. Supports monoscopic and stereo formats, zoom, and screenshot.">
-    <meta property="og:image" content="https://raw.githubusercontent.com/ProGamerGov/html-360-viewer/main/examples/example_image.png">
-
-    <!-- Page Title -->
-    <title>360° Panorama & Video Viewer</title>
-
-    <!-- A-Frame -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.7.0/aframe.min.js"></script>
-
-    <!-- Material Symbols for icons -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-
-    <style>
-        /* --- Layout & Typography --- */
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-            touch-action: pan-x pan-y; /* disable pinch-zoom */
-        }
-        #container {
-            width: 100%;
-            height: 100vh;
-            position: relative;
-            background: #000;
-        }
-
-        /* --- Drop area --- */
-        #dropArea {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: #f5f5f5;
-            border: 3px dashed #ccc;
-            z-index: 10;
-            transition: 0.2s ease all;
-        }
-        #dropArea.hidden { display: none; }
-        #dropArea h2 { margin-bottom: 12px; color: #333; }
-        #fileInput { display: none; }
-        #selectButton {
-            padding: 12px 24px;
-            background: #4285f4;
-            border: none;
-            border-radius: 4px;
-            color: #fff;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        #selectButton:hover { background: #3367d6; }
-
-        /* --- A-Frame container --- */
-        #aframeContainer {
-            position: absolute;
-            inset: 0;
-        }
-
-        /* --- Global controls wrapper --- */
-        #controls {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 20;
-            display: none;
-            text-align: center;
-            user-select: none;
-            flex-direction: column;
-            align-items: center;
-        }
-        .control-button {
-            padding: 6px 12px;
-            background: rgba(0,0,0,0.5);
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-bottom: 12px;
-            margin-right: 8px;
-        }
-        .control-button:hover { background: rgba(0,0,0,0.7); }
-        .control-button.active { background: #4285f4; }
-        .control-row {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 12px;
-        }
-
-        /* --- Modern video controls --- */
-        #videoControls {
-            display: none;
-            flex-direction: row;
-            align-items: center;
-            gap: 12px;
-            background: rgba(0,0,0,0.6);
-            padding: 10px 14px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.35);
-            margin-bottom: 16px;
-        }
-        #playPauseButton {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            border: none;
-            background: #4285f4;
-            color: #fff;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        #playPauseButton:hover { background: #3367d6; }
-
-        /* Slider styling */
-        #videoSlider {
-            -webkit-appearance: none;
-            width: 320px;
-            height: 6px;
-            background: #ddd;
-            border-radius: 3px;
-            outline: none;
-        }
-        #videoSlider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #4285f4;
-            cursor: pointer;
-            border: none;
-        }
-        #videoSlider::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #4285f4;
-            cursor: pointer;
-            border: none;
-        }
-
-        /* --- Loading indicator & zoom info --- */
-        #loadingIndicator {
-            position: absolute;
-            inset: 0;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 30;
-            background: rgba(255,255,255,0.6);
-            backdrop-filter: blur(3px);
-        }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(0,0,0,0.15);
-            border-left-color: #4285f4;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 12px;
-        }
-        @keyframes spin { 0% {transform: rotate(0);} 100% {transform: rotate(360deg);} }
-
-        #zoomInfo {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.55);
-            color: #fff;
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 14px;
-            z-index: 20;
-            display: none;
-        }
-
-        /* --- Stereo Button --- */
-        #stereoButton {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            z-index: 20;
-            padding: 6px 10px;
-            background: rgba(0,0,0,0.6);
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            font-size: 13px;
-            cursor: pointer;
-            display: none;
-        }
-        #stereoButton:hover { background: rgba(0,0,0,0.8); }
-        #stereoButton.active { background: rgba(66,133,244,0.8); }
-
-        /* --- Upload Button --- */
-        #resetButton {
-            padding: 8px 16px;
-            background: rgba(0,0,0,0.5);
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            z-index: 25;
-            display: none;
-            margin-top: 10px;
-            height: 36px;
-        }
-        #resetButton:hover { background: rgba(0,0,0,0.7); }
-
-        /* --- Screenshot Button --- */
-        #screenshotButton {
-            padding: 0;
-            background: rgba(0,0,0,0.5);
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            z-index: 25;
-            display: none;
-            margin-left: 8px;
-            margin-top: 10px;
-            height: 36px;
-            width: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-        }
-        #screenshotButton:hover { background: rgba(0,0,0,0.7); }
-
-        /* --- Bottom buttons container --- */
-        #bottomButtonsContainer {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* --- Screenshot flash effect --- */
-        #screenshotFlash {
-            position: absolute;
-            inset: 0;
-            background: white;
-            opacity: 0;
-            z-index: 40;
-            pointer-events: none;
-        }
-
-        /* --- Screenshot feedback --- */
-        #screenshotFeedback {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 6px;
-            font-size: 14px;
-            z-index: 45;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-
-        /* --- Media drop overlay --- */
-        #globalDropOverlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(18, 85, 204, 0.7);
-            border: 5px dashed #fff;
-            z-index: 50;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 24px;
-            backdrop-filter: blur(2px);
-        }
-        #globalDropOverlay p {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 15px 30px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        /* Material icons styles */
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            font-size: 24px;
-        }
-
-        /* ------------- Mobile Device Override ------------- */
-        @media (max-width: 900px) {
-            /* lift control bar */
-            #controls { bottom: 80px !important; }
-
-            /* lift the Stereo toggle to the same line */
-            #stereoButton { bottom: 80px !important; }
-
-            /* pull A-Frame’s VR / fullscreen button up and over everything */
-            .a-enter-vr-button {
-                bottom: 80px !important;
-                z-index: 1000 !important;
-            }
-        }
-
-        /* ------------- Hide Image Highlighting ------------- */
-        ::selection {
-            background: transparent;
-        }
-        ::moz-selection {
-            background: transparent;
-        }
-    </style>
-</head>
-<body>
-<div id="container">
-    <div id="dropArea">
-        <h2>Select or Drag & Drop a 360° Media</h2>
-        <p>Supported formats: All images, MP4, WebM</p>
-        <input type="file" id="fileInput" accept="image/*, video/mp4, video/webm" />
-        <button id="selectButton">Select Media</button>
-    </div>
-
-    <div id="aframeContainer"></div>
-
-    <div id="controls">
-        <div id="videoControls">
-            <button id="playPauseButton"><span class="material-symbols-outlined">pause</span></button>
-            <input type="range" id="videoSlider" min="0" max="100" value="0" step="0.1" />
-        </div>
-        <div id="bottomButtonsContainer">
-            <button id="resetButton" class="control-button">Upload</button>
-            <button id="screenshotButton" class="control-button" title="Take screenshot">
-                <span class="material-symbols-outlined">photo_camera</span>
-            </button>
-        </div>
-    </div>
-
-    <button id="stereoButton">Stereo</button>
-
-    <div id="loadingIndicator">
-        <div class="spinner"></div>
-        <p>Loading media…</p>
-    </div>
-
-    <div id="zoomInfo">Zoom: 80°</div>
-
-    <!-- Screenshot flash animation -->
-    <div id="screenshotFlash"></div>
-
-    <!-- Screenshot feedback -->
-    <div id="screenshotFeedback">Screenshot saved!</div>
-
-    <!-- Global drop overlay -->
-    <div id="globalDropOverlay">
-        <p>Drop 360° media to replace current view</p>
-    </div>
-</div>
-
-<script>
-    // Extract media URL from query parameters if present
+// Extract media URL from query parameters if present
     function getMediaUrlFromParams() {
         const urlParams = new URLSearchParams(window.location.search);
         const mediaUrl = urlParams.get('url') || urlParams.get('src');
@@ -640,29 +209,38 @@ Copyright (c) 2025 Ben Egan
                 interfaceHandlers.cleanupScene();
 
                 state.scene = document.createElement('a-scene');
-                state.scene.setAttribute('embedded','');
-                state.scene.setAttribute('xr-mode-ui','enabled: true');
+                state.scene.setAttribute('embedded', '');
+                state.scene.setAttribute('xr-mode-ui', 'enabled: true');
 
                 // Assets
                 const assets = document.createElement('a-assets');
                 state.scene.appendChild(assets);
 
+                // --- Create <video> properly ---
                 state.videoElement = document.createElement('video');
-                state.videoElement.setAttribute('id', 'videoAsset');
-                state.videoElement.setAttribute('src', src);
-                state.videoElement.setAttribute('crossorigin', 'anonymous');
+                state.videoElement.id = 'videoAsset';
+                state.videoElement.crossOrigin = "anonymous";
+
+                // ✅ Autoplay-safe attributes BEFORE setting src
+                state.videoElement.muted = false;
+                state.videoElement.setAttribute('muted', '');
+                state.videoElement.setAttribute('autoplay', '');
                 state.videoElement.setAttribute('playsinline', '');
                 state.videoElement.setAttribute('webkit-playsinline', '');
-                state.videoElement.setAttribute('preload', 'metadata');
+                state.videoElement.setAttribute('preload', 'auto');
+
+                // Assign source (dragged file or URL)
+                state.videoElement.src = src;
+
                 assets.appendChild(state.videoElement);
 
-                // Videosphere
+                // --- Videosphere ---
                 const vidsphere = document.createElement('a-videosphere');
                 vidsphere.setAttribute('src', '#videoAsset');
                 vidsphere.setAttribute('rotation', '0 -90 0');
                 state.scene.appendChild(vidsphere);
 
-                // Camera
+                // --- Camera ---
                 const camera = document.createElement('a-entity');
                 camera.setAttribute('camera', 'fov: 80');
                 camera.setAttribute('look-controls', 'reverseMouseDrag: true');
@@ -673,24 +251,49 @@ Copyright (c) 2025 Ben Egan
 
                 elements.aframeContainer.appendChild(state.scene);
 
-                // UI state
+                // --- UI state ---
                 elements.dropArea.classList.add('hidden');
                 elements.controls.style.display = 'flex';
                 elements.videoControls.style.display = 'flex';
                 elements.zoomInfo.style.display = 'block';
-                elements.stereoButton.style.display = 'none'; // Hide stereo button for videos
+                elements.stereoButton.style.display = 'none';
                 elements.resetButton.style.display = 'block';
                 elements.screenshotButton.style.display = 'block';
                 state.isPlaying = true;
                 helpers.updatePlayPauseIcon();
 
-                // Event listeners
-                state.videoElement.addEventListener('loadedmetadata', () => {
+                // --- Debug logging ---
+                ['loadedmetadata', 'canplay', 'play', 'pause', 'error'].forEach(ev => {
+                    state.videoElement.addEventListener(ev, () => console.log('VIDEO EVENT:', ev));
+                });
+
+                // --- Success handler ---
+                const onReady = () => {
                     helpers.showLoading(false);
                     elements.videoSlider.value = 0;
-                    state.videoElement.play().catch(() => {}); // autoplay may require user gesture
+                    state.videoElement.play().catch(err => console.warn("Autoplay blocked:", err));
+                    state.videoElement.removeEventListener('canplay', onReady);
+                    state.videoElement.removeEventListener('loadedmetadata', onReady);
+                };
+                state.videoElement.addEventListener('loadedmetadata', onReady);
+                state.videoElement.addEventListener('canplay', onReady);
+
+                // --- Error handler ---
+                state.videoElement.addEventListener('error', () => {
+                    helpers.showLoading(false);
+                    console.error("VIDEO ERROR:", state.videoElement.error);
+                    alert("This video cannot be played. It may use an unsupported codec (try H.264/AAC).");
                 });
+
+                // --- Keep slider synced ---
                 state.videoElement.addEventListener('timeupdate', helpers.updateSlider);
+
+                // --- Autoplay unlock on user click (fallback) ---
+                document.addEventListener('click', () => {
+                    if (state.videoElement && state.videoElement.paused) {
+                        state.videoElement.play().catch(err => console.warn("Play blocked:", err));
+                    }
+                }, { once: true });
             },
 
             // Load media from URL if provided
@@ -958,6 +561,3 @@ Copyright (c) 2025 Ben Egan
             mediaHandlers.loadMediaFromUrl(mediaParams.url, mediaParams.stereoMode);
         }
     });
-</script>
-</body>
-</html>

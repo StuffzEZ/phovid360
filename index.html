@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhoVid360</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; text-align: center; justify-content: center;}
+        a { color: #4285f4; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        input, button { padding: 8px; margin: 5px 0; width: 100%; max-width: 400px; }
+        #result { margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Welcome to PhoVid360!</h1>
+    <p>A modern 360 photo and video viewer for the web.</p>
+
+    <h2>Quick Links</h2>
+    <ul>
+        <a href="help.html" target="_blank">Documentation (GitHub Wiki)</a><br>
+        <a href="viewer.html" target="_blank">Open Viewer</a>
+    </ul>
+
+    <h2>Generate Shareable PhoVid360 Link</h2>
+    <p>Paste a raw video/photo URL (MP4/WebM for videos, any for Photo) below to create a shareable PhoVid360 link.</p>
+
+    <input type="text" id="videoUrl" placeholder="Enter video/photo URL here">
+    <button id="generateBtn">Generate & Shorten Link</button>
+    <div id="result"></div>
+
+    <script src="assets/javascript/shorten.js"></script>
+</body>
+</html>
