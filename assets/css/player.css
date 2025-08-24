@@ -108,7 +108,7 @@
 
         /* Slider styling */
         #videoSlider {
-            -webkit-appearance: none;
+            -webkit-appearance: none; /* Ignore this error */
             width: 320px;
             height: 6px;
             background: #ddd;
